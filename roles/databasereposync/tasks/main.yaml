@@ -9,6 +9,18 @@
     cmd: "{{ role_path }}/files/getDbJsonList.sh {{ db_user | default('root') }} {{ db_password | default('your_root_password') }} {{ db_host | default('localhost') }}"
   register: db_json_output
 
-- name: Show database list JSON
+- name: Parse database list JSON
+  ansible.builtin.set_fact:
+    db_list: "{{ db_json_output.stdout | from_json | dict2items(key_name='name', value_name='value') | selectattr('key', 'equalto', 'databases') | map(attribute='value') | first }}"
+
+- name: Query REST endpoint xyz for each database
+  ansible.builtin.uri:
+    url: "http://xyz/api/db/{{ item }}"
+    method: GET
+    return_content: yes
+  loop: "{{ db_list }}"
+  register: rest_results
+
+- name: Show REST responses
   ansible.builtin.debug:
-    msg: "{{ db_json_output.stdout }}"
+    var: rest_results.results

@@ -1,0 +1,10 @@
+---
+- name: Run databasereposync role to get MariaDB database list as JSON
+  hosts: mariadb_servers
+  gather_facts: false
+  roles:
+    - role: databasereposync
+      vars:
+        db_user: root
+        db_password: your_root_password
+        db_host: localhost

@@ -1,0 +1,14 @@
+---
+- name: Ensure jq is installed
+  ansible.builtin.package:
+    name: jq
+    state: present
+
+- name: Copy getDbJsonList.sh to remote server and run it using ansible.builtin.script
+  ansible.builtin.script:
+    cmd: "{{ role_path }}/files/getDbJsonList.sh {{ db_user | default('root') }} {{ db_password | default('your_root_password') }} {{ db_host | default('localhost') }}"
+  register: db_json_output
+
+- name: Show database list JSON
+  ansible.builtin.debug:
+    msg: "{{ db_json_output.stdout }}"

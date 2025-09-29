@@ -13,11 +13,27 @@
   ansible.builtin.set_fact:
     db_list: "{{ db_json_output.stdout | from_json | dict2items(key_name='name', value_name='value') | selectattr('key', 'equalto', 'databases') | map(attribute='value') | first }}"
 
-- name: Query REST endpoint xyz for each database
+- name: Set name and city variables
+  ansible.builtin.set_fact:
+    my_name: "example_name"
+    my_city: "example_city"
+
+- name: Convert name and city to JSON
+  ansible.builtin.set_fact:
+    name_city_json: "{{ {'name': my_name, 'city': my_city} | to_json }}"
+
+- name: Show JSON for name and city
+  ansible.builtin.debug:
+    var: name_city_json
+
+- name: Query REST endpoint xyz for each database with name_city_json as body
   ansible.builtin.uri:
     url: "http://xyz/api/db/{{ item }}"
-    method: GET
+    method: POST
     return_content: yes
+    body: "{{ name_city_json }}"
+    headers:
+      Content-Type: application/json
   loop: "{{ db_list }}"
   register: rest_results
 
